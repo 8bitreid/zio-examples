@@ -1,3 +1,7 @@
+/** 
+  * general ZHTTP example with some layer 
+  * @8bitreid
+  */
 package zhttp
 
 import zhttp.http.*
