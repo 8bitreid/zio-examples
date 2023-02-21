@@ -6,14 +6,14 @@ import zio.*
 import zio.json.*
 
 object ZhttpServer extends ZIOAppDefault {
+  override def run = server.provide(HttpApp.layer, BackendService.layer)
 
-  private val server = for {
-    _       <- ZIO.log("starting server")
-    httpApp <- ZIO.service[HttpApp]
-    _       <- Server.start(8090, httpApp.app)
-  } yield ()
-
-  def run = server.provide(HttpApp.layer, BackendService.layer)
+  private val server: ZIO[HttpApp, Throwable, Unit] =
+    for {
+      _       <- ZIO.log("starting server")
+      httpApp <- ZIO.service[HttpApp]
+      _       <- Server.start(8090, httpApp.app)
+    } yield ()
 
   trait HttpApp {
     val app: Http[Any, Throwable, Request, Response]
