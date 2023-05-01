@@ -1,17 +1,29 @@
 package example.zhttp.service
 
-import example.zhttp.model.Rocket
-import zio.{Task, UIO, ZIO, ZLayer}
+import example.zhttp.model.{LaunchInfo, Rocket}
+import zio.{Ref, Task, UIO, ZIO, ZLayer}
 
 trait RocketService {
-  def rocketResponse: UIO[Rocket]
+  def launchRocket: UIO[Rocket]
+  def launchInfo: UIO[LaunchInfo]
 }
 
 object RocketService {
-  val layer = ZLayer.fromFunction(RockerServiceLive.apply _)
+  val liveRockerService = ZLayer.fromFunction(RocketServiceLive.apply(_))
 }
 
-case class RockerServiceLive() extends RocketService {
-  override def rocketResponse: UIO[Rocket] =
-    ZIO.logInfo("rocket launch") *> ZIO.succeed(Rocket("🚀", "take off!"))
+object RocketLaunchCount {
+  val launchCount = ZLayer(Ref.make(0))
+}
+case class RocketServiceLive(launchCount: Ref[Int]) extends RocketService {
+  override def launchRocket: UIO[Rocket] =
+    for {
+      totalLaunches <- launchCount.updateAndGet(_ + 1)
+      _             <- ZIO.logInfo(s"rocket launch number $totalLaunches")
+    } yield Rocket("🚀", s"take off number $totalLaunches")
+
+  override def launchInfo: UIO[LaunchInfo] =
+    for {
+      totalLaunches <- launchCount.get
+    } yield LaunchInfo(totalLaunches)
 }

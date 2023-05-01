@@ -2,6 +2,8 @@ val scala3Version = "3.2.2"
 val zioVersion    = "2.0.13"
 val ZHTTPVersion  = "3.0.0-RC1"
 
+Compile / run / fork := true
+
 lazy val root = project
   .in(file("."))
   .settings(
